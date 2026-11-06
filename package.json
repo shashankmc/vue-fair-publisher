@@ -45,7 +45,8 @@
     "build": "vite build",
     "test": "vitest run && npm run test:types",
     "test:types": "vue-tsc -p tsconfig.typecheck.json",
-    "test:watch": "vitest"
+    "test:watch": "vitest",
+    "prepare": "npm run build 1>&2"
   },
   "peerDependencies": {
     "vue": "^3.4.0"
