@@ -252,3 +252,15 @@ textarea.vfp-input { min-height: 6rem; resize: vertical; }
   gap: var(--vfp-space-sm);
   align-items: end;
 }
+
+.vfp-sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}

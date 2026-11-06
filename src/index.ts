@@ -3,6 +3,7 @@ import './styles/tokens.css'
 import './styles/components.css'
 import { createHttpAdapter } from './adapters/http'
 import type { HttpAdapterOptions } from './adapters/http'
+import PublishWizard from './components/PublishWizard.vue'
 import PublicationRegistry from './components/PublicationRegistry.vue'
 import RepositoryToken from './components/RepositoryToken.vue'
 import { ADAPTER_KEY } from './context'
@@ -20,11 +21,12 @@ export const VueFairPublisherPlugin = {
     app.provide(ADAPTER_KEY, adapter)
     app.component('RepositoryToken', RepositoryToken)
     app.component('PublicationRegistry', PublicationRegistry)
+    app.component('PublishWizard', PublishWizard)
   },
 }
 
 export default VueFairPublisherPlugin
 
-export { ADAPTER_KEY, PublicationRegistry, RepositoryToken, createHttpAdapter }
+export { ADAPTER_KEY, PublicationRegistry, PublishWizard, RepositoryToken, createHttpAdapter }
 export type { HttpAdapterOptions }
 export * from './types'
