@@ -70,6 +70,7 @@ export async function click(wrapper: Wrapper, text: string) {
 /** Fill everything the default config requires, draft and approve the card. */
 export async function completeDetails(wrapper: Wrapper) {
   await field(wrapper, 'Name').setValue('Doe, Jane')
+  await field(wrapper, 'License').setValue('cc-by-4.0')
   await click(wrapper, 'Draft the card')
   await choice(wrapper, 'I have read this card').setValue(true)
 }
