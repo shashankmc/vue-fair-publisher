@@ -1,0 +1,35 @@
+{
+  "upload_type": "software",
+  "title": "vue-fair-publisher",
+  "description": "Vue 3 components for publishing datasets and models to a research repository (Zenodo in v1) with FAIR metadata: choosing what to publish, metadata, access level, attestation, the dataset or model card, and a registry of published records. Talks to fair-publishing's HTTP API through a host-supplied adapter.",
+  "version": "0.1.0",
+  "creators": [
+    {
+      "name": "Chakravarthy, Shashank",
+      "affiliation": "Maastricht University"
+    }
+  ],
+  "license": "mit",
+  "keywords": [
+    "FAIR",
+    "research data",
+    "Zenodo",
+    "Vue",
+    "legal NLP"
+  ],
+  "access_right": "open",
+  "related_identifiers": [
+    {
+      "identifier": "https://github.com/shashankmc/vue-fair-publisher",
+      "relation": "isSupplementTo",
+      "resource_type": "software",
+      "scheme": "url"
+    },
+    {
+      "identifier": "https://github.com/shashankmc/fair-publishing",
+      "relation": "references",
+      "resource_type": "software",
+      "scheme": "url"
+    }
+  ]
+}
