@@ -189,7 +189,7 @@
           </label>
         </fieldset>
 
-        <RefusalAlert v-if="refusal" :refusal="refusal" />
+        <RefusalAlert v-if="refusal" :refusal="refusal" @switch="switchTo" />
         <button type="submit" class="vfp-btn vfp-btn-primary" :disabled="previewing">
           {{ previewing ? 'Preparing the preview…' : 'Preview the deposit' }}
         </button>
@@ -201,8 +201,59 @@
           <li>1. Describe it</li>
           <li aria-current="step">2. Check and publish</li>
         </ol>
-        <RefusalAlert v-if="refusal" :refusal="refusal" />
-        <button type="button" class="vfp-btn vfp-btn-secondary" @click="backToDetails">Back to the details</button>
+        <template v-if="previewData">
+          <p class="vfp-muted">This is what will be deposited in your {{ config.repository.name }} account. Nothing has been sent yet.</p>
+          <h4 class="vfp-subheading">The record</h4>
+          <dl class="vfp-dl">
+            <dt>Title</dt>
+            <dd>{{ dataciteTitle || '—' }}</dd>
+            <dt>Creators</dt>
+            <dd>{{ dataciteCreators.join('; ') || '—' }}</dd>
+            <dt>License</dt>
+            <dd>{{ dataciteLicense || '—' }}</dd>
+            <dt>Access</dt>
+            <dd>{{ ACCESS_LABEL[access] }}</dd>
+          </dl>
+          <h4 class="vfp-subheading">Files</h4>
+          <ul v-if="previewData.files?.length" class="vfp-list" aria-label="Files">
+            <li v-for="f in previewData.files" :key="f.name" class="vfp-list-item vfp-row vfp-spread">
+              <span>{{ f.name }}</span>
+              <span class="vfp-muted">{{ formatSize(f.size) }}</span>
+            </li>
+          </ul>
+          <p v-else class="vfp-muted">No files are uploaded, only the description.</p>
+          <h4 class="vfp-subheading">The card</h4>
+          <pre class="vfp-preview-card vfp-detail">{{ previewData.card }}</pre>
+
+          <RepositoryToken v-if="tokenConnected === false" :adapter="adapter" :config="config" @change="tokenConnected = $event" />
+
+          <fieldset class="vfp-fieldset" :class="{ 'vfp-invalid': attestationInvalid }">
+            <legend>Before you publish</legend>
+            <p class="vfp-alert vfp-alert-warning">
+              A DOI is permanent. Once this is published, the record can be hidden but its DOI cannot be withdrawn. Confirm all three
+              statements only if they are true.
+            </p>
+            <label v-for="a in attestations" :key="a.key" class="vfp-choice">
+              <input
+                v-model="attestation[a.key]"
+                type="checkbox"
+                :aria-invalid="invalid.has(`attestation.${a.key}`) ? 'true' : undefined"
+              />
+              <span>{{ a.label }}</span>
+            </label>
+          </fieldset>
+        </template>
+
+        <RefusalAlert v-if="refusal" :refusal="refusal" @switch="switchTo" />
+        <div class="vfp-row">
+          <button type="button" class="vfp-btn vfp-btn-secondary" :disabled="publishing" @click="backToDetails">Back to the details</button>
+          <button v-if="previewData" type="button" class="vfp-btn vfp-btn-primary" :disabled="!canPublish" @click="publish">
+            {{ publishing ? 'Publishing…' : 'Publish' }}
+          </button>
+        </div>
+        <p v-if="previewData && !canPublish && !publishing" class="vfp-muted">
+          {{ tokenConnected === false ? 'Connect your token and confirm the three statements to publish.' : 'Confirm the three statements to publish.' }}
+        </p>
       </div>
     </template>
   </section>
@@ -211,11 +262,12 @@
 <script setup lang="ts">
 import { computed, reactive, ref, watch } from 'vue'
 import { errorMessage, useAdapter, useConfig } from '../context'
-import { ACCESS_HINT, ACCESS_LABEL, KIND_LABEL, doiUrl } from '../labels'
+import { ACCESS_HINT, ACCESS_LABEL, KIND_LABEL, doiUrl, licenseTitle } from '../labels'
 import type {
   AccessLevel,
   Artefact,
   ArtefactKind,
+  Attestation,
   ArtefactRef,
   MetadataField,
   Preview,
@@ -228,6 +280,7 @@ import type {
 import LoadError from './LoadError.vue'
 import PublishingOff from './PublishingOff.vue'
 import RefusalAlert from './RefusalAlert.vue'
+import RepositoryToken from './RepositoryToken.vue'
 
 const props = defineProps<{
   adapter?: PublishingAdapter
@@ -303,6 +356,46 @@ const refusal = ref<PublishingError | null>(null)
 const previewing = ref(false)
 const previewData = ref<Preview | null>(null)
 const published = ref<Publication | null>(null)
+const publishing = ref(false)
+const tokenConnected = ref<boolean | null>(null)
+const attestation = reactive<Attestation>({ license: false, rights: false, personal_data: false })
+
+const attestations = computed<{ key: keyof Attestation; label: string }[]>(() => [
+  {
+    key: 'license',
+    label: form.license
+      ? `I may release it under the license I chose: ${licenseTitle(config.value, form.license)}.`
+      : 'I may release it under the license I chose.',
+  },
+  { key: 'rights', label: 'I hold the rights to this content, or have permission to publish it.' },
+  { key: 'personal_data', label: 'It contains no personal data that may not be published.' },
+])
+const attestationInvalid = computed(() => [...invalid].some((k) => k.startsWith('attestation.')))
+const canPublish = computed(
+  () => !publishing.value && tokenConnected.value === true && attestation.license && attestation.rights && attestation.personal_data,
+)
+
+type DataCite = {
+  titles?: { title?: string }[]
+  creators?: { name?: string; givenName?: string; familyName?: string }[]
+  rightsList?: { rights?: string; rightsIdentifier?: string }[]
+}
+const datacite = computed(() => (previewData.value?.datacite ?? {}) as DataCite)
+const dataciteTitle = computed(() => datacite.value.titles?.[0]?.title ?? '')
+const dataciteCreators = computed(() =>
+  (datacite.value.creators ?? []).map((c) => c.name ?? [c.familyName, c.givenName].filter(Boolean).join(', ')).filter(Boolean),
+)
+const dataciteLicense = computed(() => {
+  const r = datacite.value.rightsList?.[0]
+  return r?.rights ?? (r?.rightsIdentifier ? licenseTitle(config.value, r.rightsIdentifier) : '')
+})
+
+function formatSize(bytes: number) {
+  if (typeof bytes !== 'number') return ''
+  if (bytes < 1024) return `${bytes} bytes`
+  if (bytes < 1024 * 1024) return `${Math.round(bytes / 1024)} KB`
+  return `${(bytes / (1024 * 1024)).toFixed(1)} MB`
+}
 
 const { config, loading, error, reload } = useConfig(adapter, () => props.config, async () => {
   artefacts.value = await adapter.listArtefacts()
@@ -363,6 +456,10 @@ function open(a: Artefact) {
   refusal.value = null
   previewData.value = null
   published.value = null
+  tokenConnected.value = null
+  attestation.license = false
+  attestation.rights = false
+  attestation.personal_data = false
 }
 
 watch(
@@ -378,6 +475,7 @@ function pick() {
 }
 
 function switchTo(dataset: { id: string }) {
+  if (!dataset) return
   const ref: ArtefactRef = { kind: 'dataset', id: dataset.id }
   emit('switch-artefact', ref)
   openRef(ref.kind, ref.id)
@@ -431,7 +529,7 @@ function buildRequest(): PublishRequest {
     access: access.value,
     ...(access.value === 'restricted' ? { access_conditions: accessConditions.value.trim() } : {}),
     card: { text: cardText.value, approved: cardApproved.value },
-    attestation: { license: false, rights: false, personal_data: false },
+    attestation: { ...attestation },
   }
 }
 
@@ -469,10 +567,33 @@ async function toPreview() {
   try {
     previewData.value = await adapter.preview(buildRequest())
     stage.value = 'preview'
+    invalid.clear()
+    if (tokenConnected.value !== true) {
+      try {
+        tokenConnected.value = (await adapter.getTokenStatus()).connected
+      } catch {
+        tokenConnected.value = false
+      }
+    }
   } catch (e) {
     handleRefusal(e)
   } finally {
     previewing.value = false
+  }
+}
+
+async function publish() {
+  if (!canPublish.value) return
+  refusal.value = null
+  invalid.clear()
+  publishing.value = true
+  try {
+    published.value = await adapter.publish(buildRequest())
+    emit('published', published.value)
+  } catch (e) {
+    handleRefusal(e)
+  } finally {
+    publishing.value = false
   }
 }
 
@@ -500,6 +621,12 @@ function handleRefusal(e: unknown) {
     case 'invalid_access':
       markInvalid(['access_conditions'])
       stage.value = 'details'
+      break
+    case 'token_required':
+      tokenConnected.value = false
+      break
+    case 'attestation_required':
+      markInvalid((err.missing ?? ['license', 'rights', 'personal_data']).map((k) => `attestation.${k}`))
       break
     case 'card_not_approved':
       markInvalid(['card_approved'])
