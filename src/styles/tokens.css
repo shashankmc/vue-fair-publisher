@@ -1,0 +1,47 @@
+/* =========================================================================
+   vue-fair-publisher: design tokens
+
+   The --vfp-* custom properties are the public theming contract. A host maps
+   its own tokens onto them, e.g.
+
+     html:root, html .vfp { --vfp-accent: rgb(var(--primary-600)); }
+
+   Defaults sit on :root and on the .vfp class every component carries, so a
+   host can also theme one subtree.
+   ========================================================================= */
+
+:root,
+.vfp {
+  --vfp-surface: #fffdf9;
+  --vfp-surface-sunken: #f7f4ec;
+  --vfp-border: #e2dccd;
+  --vfp-border-strong: #cdc5b2;
+
+  --vfp-text: #1b1916;
+  --vfp-text-muted: #6d6455;
+  --vfp-text-subtle: #948a78;
+
+  --vfp-accent: #0f5f5a;
+  --vfp-accent-strong: #0b4a46;
+  --vfp-accent-soft: #e2eeec;
+  --vfp-on-accent: #f8faf8;
+
+  --vfp-success: #2f6b46;
+  --vfp-success-soft: #e7efe6;
+  --vfp-warning: #8a5a1a;
+  --vfp-warning-soft: #f4ecdd;
+  --vfp-error: #9b2c2c;
+  --vfp-error-soft: #f6e7e5;
+
+  --vfp-font-sans: ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+  --vfp-font-mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+
+  --vfp-radius-sm: 0.25rem;
+  --vfp-radius-md: 0.5rem;
+  --vfp-radius-lg: 0.875rem;
+
+  --vfp-space-xs: 0.25rem;
+  --vfp-space-sm: 0.5rem;
+  --vfp-space-md: 1rem;
+  --vfp-space-lg: 1.5rem;
+}
