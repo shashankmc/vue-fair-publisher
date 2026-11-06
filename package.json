@@ -1,0 +1,64 @@
+{
+  "name": "vue-fair-publisher",
+  "version": "0.1.0",
+  "description": "Vue 3 components for publishing datasets and models to a research repository (Zenodo in v1) with FAIR metadata, through fair-publishing's HTTP API and a host-supplied adapter",
+  "license": "MIT",
+  "author": {
+    "name": "Shashank Chakravarthy"
+  },
+  "homepage": "https://github.com/shashankmc/vue-fair-publisher#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/shashankmc/vue-fair-publisher.git"
+  },
+  "bugs": {
+    "url": "https://github.com/shashankmc/vue-fair-publisher/issues"
+  },
+  "keywords": [
+    "vue",
+    "fair",
+    "research-data",
+    "zenodo",
+    "doi",
+    "legal-nlp",
+    "legal-blocks"
+  ],
+  "type": "module",
+  "files": [
+    "dist"
+  ],
+  "main": "./dist/vue-fair-publisher.umd.js",
+  "module": "./dist/vue-fair-publisher.es.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/vue-fair-publisher.es.js",
+      "require": "./dist/vue-fair-publisher.umd.js"
+    },
+    "./style.css": "./dist/style.css"
+  },
+  "sideEffects": [
+    "*.css"
+  ],
+  "scripts": {
+    "build": "vite build",
+    "test": "vitest run && npm run test:types",
+    "test:types": "vue-tsc -p tsconfig.typecheck.json",
+    "test:watch": "vitest"
+  },
+  "peerDependencies": {
+    "vue": "^3.4.0"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-vue": "^5.0.0",
+    "@vue/test-utils": "^2.4.0",
+    "jsdom": "^24.0.0",
+    "typescript": "^5.4.0",
+    "vite": "^5.0.0",
+    "vite-plugin-dts": "^3.9.0",
+    "vitest": "^1.5.0",
+    "vue": "^3.4.0",
+    "vue-tsc": "^2.0.0"
+  }
+}
