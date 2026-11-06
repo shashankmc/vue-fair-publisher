@@ -8,6 +8,8 @@ While the version is 0.x, minor releases may contain breaking changes.
 
 ## [Unreleased]
 
+## [0.1.0] - 2026-11-06
+
 ### Added
 
 - `PublishingAdapter`, with one method per route of fair-publishing's HTTP
@@ -31,4 +33,5 @@ While the version is 0.x, minor releases may contain breaking changes.
 - Repository set up with its FAIR4RS metadata (CITATION.cff, codemeta.json,
   .zenodo.json), license, contributing guide and CI.
 
-[Unreleased]: https://github.com/shashankmc/vue-fair-publisher/commits/main
+[Unreleased]: https://github.com/shashankmc/vue-fair-publisher/compare/v0.1.0...HEAD
+[0.1.0]: https://github.com/shashankmc/vue-fair-publisher/releases/tag/v0.1.0
